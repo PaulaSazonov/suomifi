@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  suomifi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./src:/home/suomifi-poc/src
+      - ./nodemon.json:/home/suomifi-poc/nodemon.json
+    container_name: suomifi
+    env_file: .env
+    environment:
+      - PORT=$PORT
+    expose:
+      - '${PORT}'
+    ports:
+      - '${PORT}:${PORT}'
+    command: npm run dev

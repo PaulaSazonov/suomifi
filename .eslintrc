@@ -1,0 +1,27 @@
+{
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier"
+  ],
+  "parserOptions": {
+    "project": "tsconfig.json"
+  },
+  "root": true,
+
+  "rules": {
+    // We use `void` to mark promises that are intentionally left unhandled.
+    "no-void": ["error", { "allowAsStatement": true }],
+
+    // Allow unused vars beginning with '_'
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_", "ignoreRestSiblings": true }
+    ]
+  }
+}
