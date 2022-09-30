@@ -1,5 +1,11 @@
+import {
+  Profile,
+  SamlConfig,
+  VerifiedCallback,
+  VerifyWithoutRequest,
+} from 'passport-saml'
 import { Strategy } from 'suomifi-passport-saml'
-import { Profile, User } from '../typings/types'
+import { SamlStrategy } from '../typings/types'
 import {
   SAML_SP_DOMAIN,
   SAML_ENTRYPOINT,
@@ -9,7 +15,14 @@ import {
   SAML_SIGNING_KEY,
 } from './dotenv'
 
-export const samlConfig = {
+type Config = SamlConfig & {
+  digestAlgorithm?: 'sha1' | 'sha256' | 'sha512' | undefined
+  suomifiAdditions: {
+    disableValidateInResponseEnforcementForUnitTestingPurposes: boolean
+  }
+}
+
+export const samlConfig: Config = {
   callbackUrl: `${SAML_SP_DOMAIN}/SAML2/ACS/POST`,
   entryPoint: SAML_ENTRYPOINT,
   logoutUrl: SAML_LOGOUTURL,
@@ -28,12 +41,15 @@ export const samlConfig = {
 }
 
 // TODO: implementation, typings
-export const verifyFn = (profile: Profile, done) => {
+export const verifyFn: VerifyWithoutRequest = (
+  profile: Profile,
+  done: VerifiedCallback,
+) => {
   try {
     const displayName = profile['urn:oid:2.16.840.1.113730.3.1.241'] // firstname + lastname
     const commonName = profile['urn:oid:2.5.4.3'] // lastname + all first names
     // validate user and get id
-    const user: User = {
+    const user = {
       displayName,
       commonName,
       UUID: 'todo',
@@ -47,10 +63,11 @@ export const verifyFn = (profile: Profile, done) => {
     return done(null, user)
   } catch (err) {
     console.error('ERROR VERIFYING USER: ', err)
-    return done(err)
+    return done(err as Error)
   }
 }
 
-const samlStrategy = new Strategy(samlConfig, verifyFn)
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+const samlStrategy = new Strategy(samlConfig, verifyFn) as SamlStrategy
 
 export default samlStrategy

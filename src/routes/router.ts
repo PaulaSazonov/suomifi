@@ -1,7 +1,20 @@
-import express, { Request, Response, NextFunction } from 'express'
-import passport, { AuthenticateOptions } from 'passport'
+import express, {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from 'express'
+import passport from 'passport'
+import { AuthenticateOptions } from 'passport-saml'
+import samlStrategy, { samlConfig } from '../config/saml'
 
 const router = express.Router({ strict: true })
+
+const authenticateOptions: AuthenticateOptions = {
+  successRedirect: '/',
+  failureRedirect: '/failed',
+  failureFlash: true,
+}
 
 const redirectToLogin = (req: Request, res: Response, next: NextFunction) =>
   !req.isAuthenticated || !req.user ? res.redirect('/login') : next()
@@ -28,16 +41,27 @@ router.get('/failed', (req, res) => {
 
 router.get(
   '/login',
-  // TODO
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  passport.authenticate('saml', {
-    successRedirect: '/',
-    failureRedirect: '/failed',
-    failureFlash: true,
-  } as AuthenticateOptions),
+  passport.authenticate('saml', authenticateOptions) as RequestHandler,
   (_req, res) => res.redirect('/'),
 )
 
-router.get('/logout', (_req, _res) => {
-  // TODO
+router.get('/logout', (req: Request, res: Response) => {
+  if (req.user) {
+    return samlStrategy.logout(
+      req,
+      samlConfig,
+      (err: Error | null, uri: string | undefined) => {
+        if (!err) {
+          // req.logout?
+          return res.redirect(uri ?? '/')
+        }
+        console.error(err)
+        // req.logout() ?
+        return res.redirect('/login')
+      },
+    )
+  }
+  return res.redirect('/login')
 })
+
+export default router

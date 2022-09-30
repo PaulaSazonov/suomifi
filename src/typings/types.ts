@@ -1,3 +1,5 @@
+import { SamlConfig, Strategy } from 'passport-saml'
+
 export type User = {
   displayName: string
   commonName: string
@@ -20,4 +22,12 @@ export type Profile = {
   'urn:oid:1.2.246.21': string // ssn
   'urn:oid:2.16.840.1.113730.3.1.241': string // firstname + lastname
   'urn:oid:2.5.4.3': string // lastname + all first names
+}
+
+export type SamlStrategy = Strategy & {
+  logout: (
+    req: Express.Request,
+    options: SamlConfig,
+    callback: (err: Error | null, url?: string | undefined) => void,
+  ) => void
 }
