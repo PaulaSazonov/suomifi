@@ -6,7 +6,11 @@ import express, {
 } from 'express'
 import passport from 'passport'
 import { AuthenticateOptions } from 'passport-saml'
+import { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
 import samlStrategy, { samlConfig } from '../config/saml'
+import logoutInterruptionHandler from '../services/errorhandler'
+import generateAuthToken from '../services/jwt'
+import { SuomifiAuthenticateOptions, User } from '../typings/types'
 
 const router = express.Router({ strict: true })
 
@@ -22,6 +26,11 @@ const redirectToLogin = (req: Request, res: Response, next: NextFunction) =>
 router.get('/', redirectToLogin, (req: Request, res: Response) => {
   const { user } = req
   if (user) {
+    const token = generateAuthToken(req.user as User)
+    res.cookie('__test_access_token', token, {
+      secure: true,
+      httpOnly: true,
+    })
     return res.redirect('/success')
   }
   return res.redirect('/unauthorized')
@@ -39,29 +48,69 @@ router.get('/failed', (req, res) => {
   res.status(418).send('Login failed')
 })
 
+/**
+ * SP initiates SSO (Single Sign-On), sends Authentication Request
+ */
 router.get(
   '/login',
-  passport.authenticate('saml', authenticateOptions) as RequestHandler,
-  (_req, res) => res.redirect('/'),
+  (req: Request, res: Response, next: NextFunction) =>
+    passport.authenticate(
+      'saml',
+      {
+        ...authenticateOptions,
+        vetumaLang: req.query.lng ?? 'fi',
+      } as SuomifiAuthenticateOptions,
+      () => {
+        next()
+      },
+    )(req, res, next),
+  (req, res) => res.redirect('/'),
 )
 
+/**
+ * Receive Authentication Response from IdP,
+ * error handler for user initiated interruption
+ */
+router.post(
+  '/SAML2/ACS/POST',
+  passport.authenticate('saml', authenticateOptions) as RequestHandler,
+  logoutInterruptionHandler,
+)
+
+/**
+ * SP initiates SLO (Single LogOut), generates LogoutRequest
+ */
 router.get('/logout', (req: Request, res: Response) => {
   if (req.user) {
     return samlStrategy.logout(
-      req,
+      req as RequestWithUser,
       samlConfig,
-      (err: Error | null, uri: string | undefined) => {
+      (err: Error | null, url: string | null | undefined) => {
         if (!err) {
-          // req.logout?
-          return res.redirect(uri ?? '/')
+          return req.logout(() => res.redirect(url ?? '/'))
         }
         console.error(err)
-        // req.logout() ?
-        return res.redirect('/login')
+        res.clearCookie('__test_access_token')
+        return req.logout(() => res.redirect('/login'))
       },
     )
   }
   return res.redirect('/login')
 })
+
+/**
+ * IdP notifies logout, possible cases:
+ * 1: SP requested logout, IdP confirms logout.
+ * 2: IdP request logout after receive logout request from another SP that shared a session.
+ */
+router.get(
+  '/SAML2/SLO/REDIRECT',
+  (req, res, next) => {
+    passport.authenticate('saml', () => {
+      next()
+    })(req, res, next)
+  },
+  (req, res) => req.logout(() => res.redirect('/login')),
+)
 
 export default router

@@ -12,9 +12,12 @@ declare const process: {
     SAML_IDP_DOMAIN: string
     SAML_ENTRYPOINT: string
     SAML_LOGOUTURL: string
-    SAML_CERT: string
+    SAML_MULTI_CERT_CURRENT: string
+    SAML_MULTI_CERT_UPCOMING: string
     SAML_DECRYPT_KEY: string
     SAML_SIGNING_KEY: string
+    JWT_SECRET: string
+    JWT_EXP: string
   }
 }
 
@@ -24,7 +27,10 @@ export const {
   SAML_IDP_DOMAIN,
   SAML_ENTRYPOINT,
   SAML_LOGOUTURL,
-  SAML_CERT,
+  SAML_MULTI_CERT_CURRENT,
+  SAML_MULTI_CERT_UPCOMING,
   SAML_DECRYPT_KEY,
   SAML_SIGNING_KEY,
+  JWT_SECRET,
+  JWT_EXP,
 } = process.env
