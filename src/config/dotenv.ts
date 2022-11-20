@@ -18,6 +18,7 @@ declare const process: {
     SAML_SIGNING_KEY: string
     JWT_SECRET: string
     JWT_EXP: string
+    SESSION_SECRET: string
   }
 }
 
@@ -33,4 +34,5 @@ export const {
   SAML_SIGNING_KEY,
   JWT_SECRET,
   JWT_EXP,
+  SESSION_SECRET,
 } = process.env

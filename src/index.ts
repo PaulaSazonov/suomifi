@@ -1,13 +1,16 @@
 import express from 'express'
 import passport from 'passport'
 import { Strategy } from 'passport-saml/lib/passport-saml'
+import session from 'express-session'
 import { SAML_IDP_DOMAIN, PORT } from './config/dotenv'
 import samlStrategy from './config/saml'
 import router from './routes/router'
 import { User } from './typings/types'
+import { sessionConfig } from './config/session'
 
 const app = express()
 
+app.use(session(sessionConfig))
 app.use(passport.initialize())
 app.use(passport.session())
 

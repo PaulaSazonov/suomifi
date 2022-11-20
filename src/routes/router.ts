@@ -98,6 +98,15 @@ router.get('/logout', (req: Request, res: Response) => {
   return res.redirect('/login')
 })
 
+const logoutHandler = (req: Request, res: Response, next: NextFunction) => {
+  if (req.session) {
+    req.session.destroy((err) => next(err))
+  }
+  res.clearCookie('__test_access_token')
+  req.logout((err) => next(err))
+  next()
+}
+
 /**
  * IdP notifies logout, possible cases:
  * 1: SP requested logout, IdP confirms logout.
@@ -106,11 +115,9 @@ router.get('/logout', (req: Request, res: Response) => {
 router.get(
   '/SAML2/SLO/REDIRECT',
   (req, res, next) => {
-    passport.authenticate('saml', () => {
-      next()
-    })(req, res, next)
+    passport.authenticate('saml', logoutHandler)(req, res, next)
   },
-  (req, res) => req.logout(() => res.redirect('/login')),
+  (req, res) => res.redirect('/login'),
 )
 
 export default router
