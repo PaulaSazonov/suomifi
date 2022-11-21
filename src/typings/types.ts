@@ -21,14 +21,12 @@ export interface Profile extends PassportSaml.Profile {
   'urn:oid:2.5.4.3': string // lastname + all first names
 }
 
-export interface SamlConfig extends PassportSaml.SamlConfig {
-  digestAlgorithm?: 'sha1' | 'sha256' | 'sha512' | undefined
-  privateCert: string
-  suomifiAdditions: {
-    disableValidateInResponseEnforcementForUnitTestingPurposes: boolean
-  }
-}
-
 export interface SuomifiAuthenticateOptions extends AuthenticateOptions {
   vetumaLang: string
+}
+
+export interface SessionUserData {
+  UUID: string
+  nameID: string
+  nameIDFormat: string
 }

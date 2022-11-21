@@ -1,20 +1,35 @@
 version: '3.8'
 
 services:
-  suomifi:
+  cache:
+    image: redis:7.0-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass $REDIS_PW
+    volumes:
+      - cache:/data
+  api:
     build:
       context: .
       dockerfile: Dockerfile
       target: base
+    depends_on:
+      - cache
     volumes:
-      - ./src:/home/suomifi-poc/src
-      - ./nodemon.json:/home/suomifi-poc/nodemon.json
+      - .:/app/
     container_name: suomifi
     env_file: .env
     environment:
-      - PORT=$PORT
+      PORT: $PORT
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: $REDIS_PW
     expose:
       - '${PORT}'
     ports:
       - '${PORT}:${PORT}'
     command: npm run dev
+volumes:
+  cache:
+    driver: local

@@ -21,3 +21,5 @@ tmp
 .DS_Store
 
 metadata.xml
+
+dist/**

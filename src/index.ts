@@ -5,7 +5,7 @@ import session from 'express-session'
 import { SAML_IDP_DOMAIN, PORT } from './config/dotenv'
 import samlStrategy from './config/saml'
 import router from './routes/router'
-import { User } from './typings/types'
+import { SessionUserData, User } from './typings/types'
 import { sessionConfig } from './config/session'
 
 const app = express()
@@ -22,11 +22,15 @@ app.use((req, res, next) => {
 
 app.use('/', router)
 
-passport.serializeUser((user, done) => {
-  done(null, user)
+passport.serializeUser<SessionUserData>((user: any, done) => {
+  done(null, {
+    UUID: user.UUID,
+    nameID: user?.nameID,
+    nameIDFormat: user?.nameIDFormat,
+  })
 })
 
-passport.deserializeUser((user: User, done) => {
+passport.deserializeUser<SessionUserData>((user: any, done) => {
   done(null, user)
 })
 passport.use(samlStrategy as Strategy)
