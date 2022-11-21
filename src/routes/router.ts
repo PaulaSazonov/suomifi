@@ -99,9 +99,7 @@ router.get('/logout', (req: Request, res: Response) => {
 })
 
 const logoutHandler = (req: Request, res: Response, next: NextFunction) => {
-  if (req.session) {
-    req.session.destroy((err) => next(err))
-  }
+  // The local session should be properly terminated here when the cache is implemented
   res.clearCookie('__test_access_token')
   req.logout((err) => next(err))
   next()
