@@ -1,6 +1,6 @@
 FROM node:16 as base
 
-WORKDIR /home/suomifi-poc
+WORKDIR /app
 
 COPY package*.json ./
 

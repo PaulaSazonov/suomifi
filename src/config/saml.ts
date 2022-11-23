@@ -4,10 +4,10 @@
 import { Strategy } from 'suomifi-passport-saml'
 import {
   Profile,
-  SamlConfig,
   VerifiedCallback,
   VerifyWithoutRequest,
 } from '../typings/types'
+import redisCache from './cache'
 import {
   SAML_SP_DOMAIN,
   SAML_ENTRYPOINT,
@@ -18,7 +18,7 @@ import {
   SAML_MULTI_CERT_UPCOMING,
 } from './dotenv'
 
-export const samlConfig: SamlConfig = {
+export const samlConfig = {
   callbackUrl: `${SAML_SP_DOMAIN}/SAML2/ACS/POST`,
   entryPoint: SAML_ENTRYPOINT,
   logoutUrl: SAML_LOGOUTURL,
@@ -31,9 +31,8 @@ export const samlConfig: SamlConfig = {
   identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
   signatureAlgorithm: 'sha256',
   digestAlgorithm: 'sha256',
-  suomifiAdditions: {
-    disableValidateInResponseEnforcementForUnitTestingPurposes: true, // for now, until validating from cache works
-  },
+  cacheProvider: redisCache,
+  validateInResponsoTo: true,
 }
 
 export const verifyFn: VerifyWithoutRequest = (

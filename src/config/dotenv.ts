@@ -19,6 +19,8 @@ declare const process: {
     JWT_SECRET: string
     JWT_EXP: string
     SESSION_SECRET: string
+    REDIS_PW: string
+    REDIS_HOST: string
   }
 }
 
@@ -35,4 +37,6 @@ export const {
   JWT_SECRET,
   JWT_EXP,
   SESSION_SECRET,
+  REDIS_PW,
+  REDIS_HOST,
 } = process.env

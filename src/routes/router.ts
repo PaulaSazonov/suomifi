@@ -3,12 +3,15 @@ import express, {
   Response,
   NextFunction,
   RequestHandler,
+  response,
 } from 'express'
 import passport from 'passport'
 import { AuthenticateOptions } from 'passport-saml'
 import { RequestWithUser } from 'passport-saml/lib/passport-saml/types'
+import redisCache from '../config/cache'
 import samlStrategy, { samlConfig } from '../config/saml'
 import logoutInterruptionHandler from '../services/errorhandler'
+import errorLogger from '../services/errorLogger'
 import generateAuthToken from '../services/jwt'
 import { SuomifiAuthenticateOptions, User } from '../typings/types'
 
@@ -95,13 +98,23 @@ router.get('/logout', (req: Request, res: Response) => {
       },
     )
   }
+  if (req.session) {
+    req.session
+  }
   return res.redirect('/login')
 })
 
-const logoutHandler = (req: Request, res: Response, next: NextFunction) => {
+const logoutHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.session) {
+    req.session.destroy(errorLogger)
+  }
   // The local session should be properly terminated here when the cache is implemented
+  req.logout(errorLogger)
   res.clearCookie('__test_access_token')
-  req.logout((err) => next(err))
   next()
 }
 
